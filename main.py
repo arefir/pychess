@@ -56,7 +56,17 @@ class Piece:
     team = "";
     symbolB = "";
     symbolW = "";
+    counter = 0;
+    srcC = [0, 0];
+    destC = [0, 0];
 
+    def parseCoords(self, src, dest):
+        srcC = list(src);
+        destC = list(dest);
+        self.srcC[0] = ord(srcC[0]);
+        self.srcC[1] = int(srcC[1]);
+        self.destC[0] = ord(destC[0]);
+        self.destC[1] = int(destC[1]);
 
 class Pawn(Piece):
 
@@ -66,6 +76,39 @@ class Pawn(Piece):
         self.symbolB = "♙";
         self.symbolW = "♟";
 
+    def checkvalid(self, src, dest, enemy, coords, mCoords):
+
+        self.parseCoords(src, dest);
+
+        srcC = self.srcC;
+        destC = self.destC;
+
+        team = self.team;
+        
+        if team == "white":
+            if self.counter > 0:
+                if (destC[1] - srcC[1]) != 1:
+                    return False;
+            elif (destC[1] - srcC[1]) > 2 or (destC[1] - srcC[1]) < 1:
+                    return False;
+
+        if team == "black":
+            if self.counter > 0:
+                if (destC[1] - srcC[1]) != -1:
+                    return False;
+            elif (destC[1] - srcC[1]) < -2 or (destC[1] - srcC[1]) > -1:
+                    return False;
+
+        if srcC[0] != destC[0]:
+            if abs(destC[0] - srcC[0]) != 1 or abs(destC[1] - srcC[1]) != 1:
+                return False;
+            elif enemy == False:
+                return False;
+        elif enemy:
+            return False;
+
+        self.counter += 1;
+        return True;
 class Rook(Piece):
 
     def __init__(self, team):
@@ -73,6 +116,46 @@ class Rook(Piece):
         self.team = team;
         self.symbolB = "♖";
         self.symbolW = "♜";
+
+    def checkvalid(self, src, dest, enemy, coords, mCoords):
+
+        self.parseCoords(src, dest);
+
+        srcC = self.srcC;
+        destC = self.destC;
+        c = coords[0];
+        r = coords[1];
+        mc = mCoords[0];
+        mr = mCoords[1];
+
+        team = self.team;
+
+        if (srcC[0] != destC[0]) and (srcC[1] != destC[1]):
+            return False;
+        
+        if (c != mc) and (abs(mc - c) > 1):
+            if (mc > c):
+                for i in range(c + 1, mc - 1):
+                    if board1.board[r][i] != 0:
+                        return False;
+            else:
+                for i in range(mc + 1, c - 1):
+                    if board1.board[r][i] != 0:
+                        return False;
+
+        if (r != mr) and (abs(mr - r) > 1):
+            if (mr > r):
+                for i in range(r + 1, mr - 1):
+                    if board1.board[i][c] != 0:
+                        return False;
+            else:
+                for i in range(mr + 1, r - 1):
+                    if board1.board[i][c] != 0:
+                        return False;
+
+        self.counter += 1;
+        return True;
+    
 
 class Knight(Piece):
 
@@ -106,6 +189,20 @@ class King(Piece):
         self.symbolB = "♔";
         self.symbolW = "♚";
 
+###########################################################################
+
+def getTrueCoords(coords):
+    coords[0] = ord(coords[0]);
+    coords[1] = 8 - int(coords[1]);
+
+    if coords[0] >= 65 and coords[0] <= 72:
+        coords[0] = 8 - (coords[0] - 64);
+    elif coords[0] >= 97 and coords[0] <= 104:
+        coords[0] = coords[0] - 97;
+    else:
+        print("Invalid coordinates");
+        return 1;
+
 board1 = ChessBoard();
 board1.printBoard();
 
@@ -116,35 +213,62 @@ while True:
 
     coords = list(piece);
 
-    c = ord(coords[0]);
-    r = 8 - int(coords[1]);
+    abort = getTrueCoords(coords);
 
-    if c >= 65 and c <= 90:
-        c = 8 - (c - 64);
-    elif c >= 97 and c <= 122:
-        c = c - 97;
-    else:
-        print("Invalid coordinates");
+    if abort == 1:
+        print("Invalid input");
+        continue;
 
-    moves = "";
+    c = coords[0];
+    r = coords[1];
+
+    # c = ord(coords[0]);
+    # r = 8 - int(coords[1]);
+
+    # if c >= 65 and c <= 72:
+    #     c = 8 - (c - 64);
+    # elif c >= 97 and c <= 104:
+    #     c = c - 97;
+    # else:
+    #     print("Invalid coordinates");
+
+    move = "";
 
     if board1.board[r][c] != 0:
         move = input("Choose square to move (eg; d4): ");
+    else:
+        print("No piece in selected square");
+        continue;
 
     if (move) != "":
         mCoords = list(move);
 
-        mc = ord(mCoords[0]);
-        mr = 8 - int(mCoords[1]);
+        abort = getTrueCoords(mCoords);
 
-        if mc >= 65 and mc <= 90:
-            mc = 8 - (mc - 64);
-        elif mc >= 97 and mc <= 122:
-            mc = mc - 97;
+        if abort == 1:
+            print("Invalid input");
+            continue;
+
+        mc = mCoords[0];
+        mr = mCoords[1];
+
+        enemy = False;
+        if board1.board[mr][mc] != 0:
+            if board1.board[mr][mc].team != pc.team:
+                enemy = True;
+            else:
+                print("Destination Square Occupied");
+                continue;
+
+        pc = board1.board[r][c];
+        valid = pc.checkvalid(piece, move, enemy, coords, mCoords);
+
+        if valid:
+            board1.board[mr][mc] = board1.board[r][c];
+            board1.board[r][c] = 0;
         else:
-            print("Invalid coordinates");
-
-        board1.board[mr][mc] = board1.board[r][c];
-        board1.board[r][c] = 0;
+            print("Invalid move")
 
     board1.printBoard();
+
+
