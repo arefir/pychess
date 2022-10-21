@@ -1,5 +1,23 @@
 from array import *
 
+
+def getTrueCoords(coords):
+
+    if isinstance(coords[0], str):
+        coords[0] = ord(coords[0]);
+        coords[1] = 8 - int(coords[1]);
+    
+    else:
+        coords[1] = 8 - coords[1];
+
+    if coords[0] >= 65 and coords[0] <= 72:
+        coords[0] = 8 - (coords[0] - 64);
+    elif coords[0] >= 97 and coords[0] <= 104:
+        coords[0] = coords[0] - 97; 
+    else:
+        print("Invalid coordinates");
+        return 1;
+
 class ChessBoard:
 
     rows, cols = (8, 8)
@@ -60,13 +78,17 @@ class Piece:
     srcC = [0, 0];
     destC = [0, 0];
 
-    def parseCoords(self, src, dest):
+    def initCoords(self, src, dest):
         srcC = list(src);
         destC = list(dest);
+        # print(srcC);
+        # print(destC);
         self.srcC[0] = ord(srcC[0]);
         self.srcC[1] = int(srcC[1]);
         self.destC[0] = ord(destC[0]);
         self.destC[1] = int(destC[1]);
+        # print(self.srcC);
+        # print(self.destC);
 
 class Pawn(Piece):
 
@@ -78,7 +100,7 @@ class Pawn(Piece):
 
     def checkvalid(self, src, dest, enemy, coords, mCoords):
 
-        self.parseCoords(src, dest);
+        self.initCoords(src, dest);
 
         srcC = self.srcC;
         destC = self.destC;
@@ -119,7 +141,7 @@ class Rook(Piece):
 
     def checkvalid(self, src, dest, enemy, coords, mCoords):
 
-        self.parseCoords(src, dest);
+        self.initCoords(src, dest);
 
         srcC = self.srcC;
         destC = self.destC;
@@ -167,7 +189,7 @@ class Knight(Piece):
 
     def checkvalid(self, src, dest, enemy, coords, mCoords):
 
-        self.parseCoords(src, dest);
+        self.initCoords(src, dest);
 
         srcC = self.srcC;
         destC = self.destC;
@@ -200,10 +222,11 @@ class Bishop(Piece):
 
     def checkvalid(self, src, dest, enemy, coords, mCoords):
 
-        self.parseCoords(src, dest);
+        self.initCoords(src, dest);
 
         srcC = self.srcC;
         destC = self.destC;
+
         c = coords[0];
         r = coords[1];
         mc = mCoords[0];
@@ -217,24 +240,29 @@ class Bishop(Piece):
         cd = 0;
         rd = 0;
 
-        if mc > c:
+        if destC[0] > srcC[0]:
             cd = 1;
         else:
             cd = -1;
 
-        if mr > r:
+        if destC[1] > srcC[1]:
             rd = 1;
         else:
             rd = -1;
         
-        c += cd;
-        r += rd;
+        srcC[0] += cd;
+        srcC[1] += rd;
 
-        while (c < mc):
-            if board1.board[r][c] != 0:
+        while (srcC[0] != destC[0]):
+            srcTC = srcC.copy();
+            getTrueCoords(srcTC);
+            # print(f"srcCol = {srcC[0]}, srcRow = {srcC[1]}, destCol = {destC[0]}, destRow = {destC[1]}")
+            # print(f"srcTCol = {srcTC[0]}, srcTRow = {srcTC[1]}")
+            # print(board1.board[srcTC[1]][srcTC[0]])
+            if board1.board[srcTC[1]][srcTC[0]] != 0:
                 return False; 
-            c += cd;
-            r += rd;
+            srcC[0] += cd; 
+            srcC[1] += rd;
 
         self.counter += 1;
         return True;   
@@ -256,18 +284,6 @@ class King(Piece):
         self.symbolW = "♚";
 
 ###########################################################################
-
-def getTrueCoords(coords):
-    coords[0] = ord(coords[0]);
-    coords[1] = 8 - int(coords[1]);
-
-    if coords[0] >= 65 and coords[0] <= 72:
-        coords[0] = 8 - (coords[0] - 64);
-    elif coords[0] >= 97 and coords[0] <= 104:
-        coords[0] = coords[0] - 97; 
-    else:
-        print("Invalid coordinates");
-        return 1;
 
 board1 = ChessBoard();
 board1.printBoard();
