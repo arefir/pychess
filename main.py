@@ -275,6 +275,76 @@ class Queen(Piece):
         self.symbolB = "♕";
         self.symbolW = "♛";
 
+    def checkvalid(self, src, dest, enemy, coords, mCoords):
+
+        self.initCoords(src, dest);
+
+        srcC = self.srcC;
+        destC = self.destC;
+        c = coords[0];
+        r = coords[1];
+        mc = mCoords[0];
+        mr = mCoords[1];
+
+        team = self.team;
+
+        if (srcC[0] != destC[0]) and (srcC[1] != destC[1]):
+            if abs(destC[0] - srcC[0]) != abs(destC[1] - srcC[1]):
+                return False;
+        
+            cd = 0;
+            rd = 0;
+
+            if destC[0] > srcC[0]:
+                cd = 1;
+            else:
+                cd = -1;
+
+            if destC[1] > srcC[1]:
+                rd = 1;
+            else:
+                rd = -1;
+            
+            srcC[0] += cd;
+            srcC[1] += rd;
+
+            while (srcC[0] != destC[0]):
+                srcTC = srcC.copy();
+                getTrueCoords(srcTC);
+                # print(f"srcCol = {srcC[0]}, srcRow = {srcC[1]}, destCol = {destC[0]}, destRow = {destC[1]}")
+                # print(f"srcTCol = {srcTC[0]}, srcTRow = {srcTC[1]}")
+                # print(board1.board[srcTC[1]][srcTC[0]])
+                if board1.board[srcTC[1]][srcTC[0]] != 0:
+                    return False; 
+                srcC[0] += cd; 
+                srcC[1] += rd;
+
+            self.counter += 1;
+            return True;
+        
+        if (c != mc) and (abs(mc - c) > 1):
+            if (mc > c):
+                for i in range(c + 1, mc - 1):
+                    if board1.board[r][i] != 0:
+                        return False;
+            else:
+                for i in range(mc + 1, c - 1):
+                    if board1.board[r][i] != 0:
+                        return False;
+
+        if (r != mr) and (abs(mr - r) > 1):
+            if (mr > r):
+                for i in range(r + 1, mr - 1):
+                    if board1.board[i][c] != 0:
+                        return False;
+            else:
+                for i in range(mr + 1, r - 1):
+                    if board1.board[i][c] != 0:
+                        return False;
+
+        self.counter += 1;
+        return True;
+
 class King(Piece):
 
     def __init__(self, team):
@@ -282,6 +352,25 @@ class King(Piece):
         self.team = team;
         self.symbolB = "♔";
         self.symbolW = "♚";
+
+    def checkvalid(self, src, dest, enemy, coords, mCoords):
+
+        self.initCoords(src, dest);
+
+        srcC = self.srcC;
+        destC = self.destC;
+        c = coords[0];
+        r = coords[1];
+        mc = mCoords[0];
+        mr = mCoords[1];
+
+        team = self.team;
+
+        if (abs(destC[0] - srcC[0])) != 1 and (abs(destC[1] - srcC[1])) != 1:
+            return False;
+
+        self.counter += 1;
+        return True;
 
 ###########################################################################
 
