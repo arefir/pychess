@@ -165,6 +165,31 @@ class Knight(Piece):
         self.symbolB = "♘";
         self.symbolW = "♞";
 
+    def checkvalid(self, src, dest, enemy, coords, mCoords):
+
+        self.parseCoords(src, dest);
+
+        srcC = self.srcC;
+        destC = self.destC;
+        c = coords[0];
+        r = coords[1];
+        mc = mCoords[0];
+        mr = mCoords[1];
+
+        team = self.team;
+
+        if abs(destC[0] - srcC[0]) == 2:
+            if abs(destC[1] - srcC[1]) == 1:
+                self.counter += 1;
+                return True;
+
+        if abs(destC[0] - srcC[0]) == 1:
+            if abs(destC[1] - srcC[1]) == 2:
+                self.counter += 1;
+                return True; 
+
+        return False;
+
 class Bishop(Piece):
 
     def __init__(self, team):
@@ -172,6 +197,47 @@ class Bishop(Piece):
         self.team = team;
         self.symbolB = "♗";
         self.symbolW = "♝";
+
+    def checkvalid(self, src, dest, enemy, coords, mCoords):
+
+        self.parseCoords(src, dest);
+
+        srcC = self.srcC;
+        destC = self.destC;
+        c = coords[0];
+        r = coords[1];
+        mc = mCoords[0];
+        mr = mCoords[1];
+
+        team = self.team;
+
+        if abs(destC[0] - srcC[0]) != abs(destC[1] - srcC[1]):
+            return False;
+        
+        cd = 0;
+        rd = 0;
+
+        if mc > c:
+            cd = 1;
+        else:
+            cd = -1;
+
+        if mr > r:
+            rd = 1;
+        else:
+            rd = -1;
+        
+        c += cd;
+        r += rd;
+
+        while (c < mc):
+            if board1.board[r][c] != 0:
+                return False; 
+            c += cd;
+            r += rd;
+
+        self.counter += 1;
+        return True;   
 
 class Queen(Piece):
 
@@ -198,7 +264,7 @@ def getTrueCoords(coords):
     if coords[0] >= 65 and coords[0] <= 72:
         coords[0] = 8 - (coords[0] - 64);
     elif coords[0] >= 97 and coords[0] <= 104:
-        coords[0] = coords[0] - 97;
+        coords[0] = coords[0] - 97; 
     else:
         print("Invalid coordinates");
         return 1;
@@ -252,6 +318,8 @@ while True:
         mc = mCoords[0];
         mr = mCoords[1];
 
+        pc = board1.board[r][c];
+
         enemy = False;
         if board1.board[mr][mc] != 0:
             if board1.board[mr][mc].team != pc.team:
@@ -260,7 +328,6 @@ while True:
                 print("Destination Square Occupied");
                 continue;
 
-        pc = board1.board[r][c];
         valid = pc.checkvalid(piece, move, enemy, coords, mCoords);
 
         if valid:
