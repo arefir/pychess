@@ -26,6 +26,7 @@ class ChessBoard:
     count = 0;
     kingB = [4, 0];
     kingW = [4, 7];
+    turn = "white";
 
 
     def __init__(self):
@@ -70,13 +71,12 @@ class ChessBoard:
 
     def isCheck(self):
 
-        if self.count % 2 == 0:
-            team = "white";
-        else:
-            team = "black";
+        team = self.turn;
 
         check = False;
-        for i in range(0, 8):
+        for i in range(0, 8):               
+            if (check) == True:
+                break;
             for j in range(0, 8):
                 piece = self.board[i][j];
                 if piece != 0:
@@ -90,6 +90,7 @@ class ChessBoard:
                             check = piece.checkvalid(src, dest, True, coords, self.kingW);
                         if team == "black":
                             dest = [self.kingB[0] + 65, 8 - self.kingB[1]]
+                            # print(dest)
                             check = piece.checkvalid(src, dest, True, coords, self.kingB);
                         
         return check;
@@ -283,8 +284,10 @@ class Bishop(Piece):
 
         team = self.team;
 
+        # print(srcC, destC)
 
         if abs(destC[0] - srcC[0]) != abs(destC[1] - srcC[1]):
+            # print("287")
             return False;
         
         cd = 0;
@@ -311,6 +314,7 @@ class Bishop(Piece):
             # print(f"srcTCol = {srcTC[0]}, srcTRow = {srcTC[1]}")
             # print(board1.board[srcTC[1]][srcTC[0]])
             if board1.board[srcTC[1]][srcTC[0]] != 0:
+                # print("314")
                 return False; 
             srcC[0] += cd; 
             srcC[1] += rd;
@@ -426,6 +430,9 @@ board1.printBoard();
 
 while True:
 
+    # print(f"KingW: {board1.kingW}, KingB: {board1.kingB}")
+    print(f"{board1.turn} to move");
+
     piece = input("Choose piece (eg; d2 | to exit input 'exit'): ");
     if piece == "exit": break;
 
@@ -489,14 +496,26 @@ while True:
             isCheck = board1.isCheck();
             print(isCheck);
             if isCheck:
-                print("Checked");
+                # print("Checked");
                 board1.board[r][c] = board1.board[mr][mc];
                 board1.board[mr][mc] = temp;
                 continue;
+
             board1.board[mr][mc].col = mc;
             board1.board[mr][mc].row = mr;
             board1.board[mr][mc].counter += 1;
             board1.count += 1;
+
+            if board1.turn == "white":
+                board1.turn = "black";
+            else:
+                board1.turn = "white";
+
+            if board1.board[mr][mc].identifier == "king":
+                if board1.board[mr][mc].team == "white":
+                    board1.kingW = [mc, mr];
+                else:
+                    board1.kingB = [mc, mr];
         else:
             print("Invalid move")
 
