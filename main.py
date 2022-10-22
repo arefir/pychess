@@ -1,4 +1,5 @@
 from array import *
+from itertools import filterfalse
 import os
 
 
@@ -79,12 +80,14 @@ class ChessBoard:
         team = self.turn
 
         check = False
-        for i in range(0, 8):
-            if (check) == True:
+        for i in range(8):
+            if check:
+                # print("if check? break")
                 break
-            for j in range(0, 8):
+            for j in range(8):
                 piece = self.board[i][j]
                 if piece != 0:
+                    # print(piece)
                     if piece.team != team:
                         coords = [j, i]
                         src = [piece.col + 65, 8 - piece.row]
@@ -92,17 +95,117 @@ class ChessBoard:
                         if team == "white":
                             dest = [self.kingW[0] + 65, 8 - self.kingW[1]]
                             # print(dest)
-                            check = piece.checkvalid(
-                                src, dest, True, coords, self.kingW
-                            )
+                            check = piece.checkvalid(src, dest, coords, self.kingW)
+                            # print(f"isCheck {piece.identifier} {src} {dest} {check}")
+                            if check:
+                                # print("if check? break")
+                                break
                         if team == "black":
                             dest = [self.kingB[0] + 65, 8 - self.kingB[1]]
                             # print(dest)
-                            check = piece.checkvalid(
-                                src, dest, True, coords, self.kingB
-                            )
-
+                            check = piece.checkvalid(src, dest, coords, self.kingB)
+                if check:
+                    # print("if check? break")
+                    break
+        # print(check)
         return check
+
+    def isCheckmate(self):
+
+        if not self.isCheck():
+            return False
+        else:
+
+            team = self.turn
+            king = [0, 0]
+
+            if team == "white":
+                king = self.kingW.copy()
+            else:
+                king = self.kingB.copy()
+
+            # kingPc = self.board[king[1]][king[0]]
+
+            # sq2 = [king[0] + 1, king[1]]
+            # sq3 = [king[0] - 1, king[1]]
+            # sq4 = [king[0], king[1] + 1]
+            # sq5 = [king[0], king[1] - 1]
+            # sq6 = [king[0] + 1, king[1] + 1]
+            # sq7 = [king[0] + 1, king[1] - 1]
+            # sq8 = [king[0] - 1, king[1] + 1]
+            # sq9 = [king[0] - 1, king[1] - 1]
+
+            # squares = [sq2, sq3, sq4, sq5, sq6, sq7, sq8, sq9]
+            # squares[:] = filterfalse(
+            #     lambda i: (i[0] < 0 or i[0] > 7 or i[1] < 0 or i[1] > 7)
+            #     or self.board[i[1]][i[0]] != 0,
+            #     squares,
+            # )
+
+            # print(squares)
+            check = True
+            for i in range(8):
+                if not check:
+                    break
+                for j in range(8):
+                    if not check:
+                        break
+                    piece = self.board[i][j]
+                    if piece != 0:
+                        if piece.team == team:
+
+                            for c in range(8):
+                                if not check:
+                                    break
+                                for r in range(8):
+                                    coords = [j, i]
+                                    dest = [c + 65, 8 - r]
+                                    src = [piece.col + 65, 8 - piece.row]
+
+                                    if self.board[r][c] != 0:
+                                        if self.board[r][c].team == team:
+                                            continue
+
+                                    if coords[0] == c and coords[1] == r:
+                                        continue
+
+                                    valid = piece.checkvalid(src, dest, coords, [c, r])
+
+                                    if valid:
+                                        temp = board1.board[r][c]
+                                        board1.board[r][c] = board1.board[coords[1]][
+                                            coords[0]
+                                        ]
+                                        board1.board[coords[1]][coords[0]] = 0
+                                        if board1.board[r][c].identifier == "king":
+                                            if board1.board[r][c].team == "white":
+                                                board1.kingW = [c, r]
+                                            else:
+                                                board1.kingB = [c, r]
+                                        # self.printBoard()
+                                        check = board1.isCheck()
+                                        # print(
+                                        #     f"isCheckmate {piece.identifier} {src} {dest} {check}"
+                                        # )
+                                        board1.board[coords[1]][
+                                            coords[0]
+                                        ] = board1.board[r][c]
+                                        board1.board[r][c] = temp
+
+                                        if board1.board[r][c] != 0:
+                                            if board1.board[r][c].identifier == "king":
+                                                if board1.board[r][c].team == "white":
+                                                    board1.kingW = king
+                                                else:
+                                                    board1.kingB = king
+
+                                        if not check:
+                                            break
+
+            if check == False:
+                return False
+            else:
+                return True
 
 
 class Piece:
@@ -160,7 +263,7 @@ class Pawn(Piece):
         self.symbolB = "♙"
         self.symbolW = "♟"
 
-    def checkvalid(self, src, dest, enemy, coords, mCoords):
+    def checkvalid(self, src, dest, coords, mCoords):
 
         self.initCoords(src, dest)
 
@@ -186,9 +289,9 @@ class Pawn(Piece):
         if srcC[0] != destC[0]:
             if abs(destC[0] - srcC[0]) != 1 or abs(destC[1] - srcC[1]) != 1:
                 return False
-            elif enemy == False:
+            elif board1.board[mCoords[1]][mCoords[0]] == 0:
                 return False
-        elif enemy:
+        elif board1.board[mCoords[1]][mCoords[0]] != 0:
             return False
 
         return True
@@ -201,7 +304,7 @@ class Rook(Piece):
         self.symbolB = "♖"
         self.symbolW = "♜"
 
-    def checkvalid(self, src, dest, enemy, coords, mCoords):
+    def checkvalid(self, src, dest, coords, mCoords):
 
         self.initCoords(src, dest)
 
@@ -247,7 +350,7 @@ class Knight(Piece):
         self.symbolB = "♘"
         self.symbolW = "♞"
 
-    def checkvalid(self, src, dest, enemy, coords, mCoords):
+    def checkvalid(self, src, dest, coords, mCoords):
 
         self.initCoords(src, dest)
 
@@ -278,7 +381,7 @@ class Bishop(Piece):
         self.symbolB = "♗"
         self.symbolW = "♝"
 
-    def checkvalid(self, src, dest, enemy, coords, mCoords):
+    def checkvalid(self, src, dest, coords, mCoords):
 
         self.initCoords(src, dest)
 
@@ -317,7 +420,7 @@ class Bishop(Piece):
         while srcC[0] != destC[0]:
             srcTC = srcC.copy()
             getTrueCoords(srcTC)
-            # print(f"srcC: {srcC}, srcTC: {srcTC}, destC: {destC}");
+            # print(f"srcC: {srcC}, srcTC: {srcTC}, destC: {destC}")
             # print(f"srcCol = {srcC[0]}, srcRow = {srcC[1]}, destCol = {destC[0]}, destRow = {destC[1]}")
             # print(f"srcTCol = {srcTC[0]}, srcTRow = {srcTC[1]}")
             # print(board1.board[srcTC[1]][srcTC[0]])
@@ -337,7 +440,7 @@ class Queen(Piece):
         self.symbolB = "♕"
         self.symbolW = "♛"
 
-    def checkvalid(self, src, dest, enemy, coords, mCoords):
+    def checkvalid(self, src, dest, coords, mCoords):
 
         self.initCoords(src, dest)
 
@@ -385,21 +488,21 @@ class Queen(Piece):
 
         if (c != mc) and (abs(mc - c) > 1):
             if mc > c:
-                for i in range(c + 1, mc - 1):
+                for i in range(c + 1, mc):
                     if board1.board[r][i] != 0:
                         return False
             else:
-                for i in range(mc + 1, c - 1):
+                for i in range(mc + 1, c):
                     if board1.board[r][i] != 0:
                         return False
 
         if (r != mr) and (abs(mr - r) > 1):
             if mr > r:
-                for i in range(r + 1, mr - 1):
+                for i in range(r + 1, mr):
                     if board1.board[i][c] != 0:
                         return False
             else:
-                for i in range(mr + 1, r - 1):
+                for i in range(mr + 1, r):
                     if board1.board[i][c] != 0:
                         return False
 
@@ -413,7 +516,7 @@ class King(Piece):
         self.symbolB = "♔"
         self.symbolW = "♚"
 
-    def checkvalid(self, src, dest, enemy, coords, mCoords):
+    def checkvalid(self, src, dest, coords, mCoords):
 
         self.initCoords(src, dest)
 
@@ -426,7 +529,7 @@ class King(Piece):
 
         team = self.team
 
-        if (abs(destC[0] - srcC[0])) != 1 and (abs(destC[1] - srcC[1])) != 1:
+        if (abs(destC[0] - srcC[0])) != 1 or (abs(destC[1] - srcC[1])) != 1:
             return False
 
         return True
@@ -441,6 +544,14 @@ while True:
     board1.printBoard()
 
     turn = board1.turn
+
+    if board1.isCheckmate():
+        print("Checkmate!")
+        if turn == "white":
+            print("Black Wins!")
+        else:
+            print("White Wins!")
+        break
     # print(f"KingW: {board1.kingW}, KingB: {board1.kingB}")
     print(f"{turn} to move")
 
@@ -497,16 +608,16 @@ while True:
 
         pc = board1.board[r][c]
 
-        enemy = False
+        # enemy = False
         if board1.board[mr][mc] != 0:
-            if board1.board[mr][mc].team != pc.team:
-                enemy = True
-            else:
+            # if board1.board[mr][mc].team != pc.team:
+            # enemy = True
+            if board1.board[mr][mc].team == pc.team:
                 os.system("cls")
                 print("Destination Square Occupied")
                 continue
 
-        valid = pc.checkvalid(piece, move, enemy, coords, mCoords)
+        valid = pc.checkvalid(piece, move, coords, mCoords)
 
         if valid:
             temp = board1.board[mr][mc]
