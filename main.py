@@ -1,4 +1,5 @@
 from array import *
+import os
 
 
 def getTrueCoords(coords):
@@ -55,7 +56,7 @@ class ChessBoard:
     def printBoard(self):
 
         c = 8
-
+        print("")
         for i in self.board:
             print(c, end=" ")
             for j in i:
@@ -71,6 +72,7 @@ class ChessBoard:
             c -= 1
 
         print("  a b c d e f g h")
+        print("")
 
     def isCheck(self):
 
@@ -433,12 +435,14 @@ class King(Piece):
 ###########################################################################
 
 board1 = ChessBoard()
-board1.printBoard()
 
 while True:
 
+    board1.printBoard()
+
+    turn = board1.turn
     # print(f"KingW: {board1.kingW}, KingB: {board1.kingB}")
-    print(f"{board1.turn} to move")
+    print(f"{turn} to move")
 
     piece = input("Choose piece (eg; d2 | to exit input 'exit'): ")
     if piece == "exit":
@@ -449,6 +453,7 @@ while True:
     abort = getTrueCoords(coords)
 
     if abort == 1:
+        os.system("cls")
         print("Invalid input")
         continue
 
@@ -468,8 +473,13 @@ while True:
     move = ""
 
     if board1.board[r][c] != 0:
-        move = input("Choose square to move (eg; d4): ")
+        if board1.board[r][c].team == turn:
+            move = input("Choose square to move (eg; d4): ")
+        else:
+            os.system("cls")
+            print("You cannot move your opponent's pieces")
     else:
+        os.system("cls")
         print("No piece in selected square")
         continue
 
@@ -492,6 +502,7 @@ while True:
             if board1.board[mr][mc].team != pc.team:
                 enemy = True
             else:
+                os.system("cls")
                 print("Destination Square Occupied")
                 continue
 
@@ -507,6 +518,8 @@ while True:
                 # print("Checked");
                 board1.board[r][c] = board1.board[mr][mc]
                 board1.board[mr][mc] = temp
+                os.system("cls")
+                print("Your King is Checked!")
                 continue
 
             board1.board[mr][mc].col = mc
@@ -524,7 +537,7 @@ while True:
                     board1.kingW = [mc, mr]
                 else:
                     board1.kingB = [mc, mr]
+            os.system("cls")
         else:
+            os.system("cls")
             print("Invalid move")
-
-    board1.printBoard()
