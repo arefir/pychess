@@ -529,7 +529,7 @@ class King(Piece):
 
         team = self.team
 
-        if (abs(destC[0] - srcC[0])) != 1 or (abs(destC[1] - srcC[1])) != 1:
+        if (abs(destC[0] - srcC[0])) > 1 or (abs(destC[1] - srcC[1])) > 1:
             return False
 
         return True
@@ -624,7 +624,7 @@ while True:
             board1.board[mr][mc] = board1.board[r][c]
             board1.board[r][c] = 0
             isCheck = board1.isCheck()
-            print(isCheck)
+            # print(isCheck)
             if isCheck:
                 # print("Checked");
                 board1.board[r][c] = board1.board[mr][mc]
