@@ -620,17 +620,38 @@ while True:
         valid = pc.checkvalid(piece, move, coords, mCoords)
 
         if valid:
+
+            king = [0, 0]
+
+            if pc.identifier == "king":
+                if turn == "white":
+                    king = board1.kingW.copy()
+                    board1.kingW = [mc, mr]
+                else:
+                    king = board1.kingB.copy()
+                    board1.kingB = [mc, mr]
+
             temp = board1.board[mr][mc]
             board1.board[mr][mc] = board1.board[r][c]
             board1.board[r][c] = 0
             isCheck = board1.isCheck()
+
+            if pc.identifier == "king":
+                if turn == "white":
+                    board1.kingW = king
+                else:
+                    board1.kingB = king
+            # board1.printBoard()
+            # x = input()
+            # if x == 1:
+            #     break
             # print(isCheck)
             if isCheck:
                 # print("Checked");
                 board1.board[r][c] = board1.board[mr][mc]
                 board1.board[mr][mc] = temp
                 os.system("cls")
-                print("Your King is Checked!")
+                print("Checked!")
                 continue
 
             board1.board[mr][mc].col = mc
